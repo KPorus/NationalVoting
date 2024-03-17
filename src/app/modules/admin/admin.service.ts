@@ -1,7 +1,7 @@
 import { CandidateList, Candidate } from './../../models/candidate.model';
 import { AdminInfo, Info } from "../../models/admin/admininfo.model";
 const xlsx = require("xlsx");
-
+const fs = require("fs");
 interface Body
 {
     email: string,
@@ -80,7 +80,7 @@ const uploadCandidate = async (data: Express.Multer.File | undefined): Promise<U
             numberOfCandidate++;
         }
     }
-
+    fs.unlinkSync(`file/${data.filename}`);
     return Promise.resolve({ numberOfCandidate, numberOfUsers });
 }
 

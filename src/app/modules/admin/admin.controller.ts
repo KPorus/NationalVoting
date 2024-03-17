@@ -76,8 +76,7 @@ const uploadCandidate = async (req: Request, res: Response) =>
         }
 
         const candidate = await adminService.uploadCandidate(input);
-        console.log(candidate)
-
+        
         if (!candidate)
         {
             return res.status(500).json({ status: "Fail", message: "Internal server error." });
