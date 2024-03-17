@@ -5,10 +5,12 @@ export interface Candidate
     _id?: Types.ObjectId,
     name: string,
     Area0fvoting: string,
-    wardno:number,
-    Address:string,
-    union:number,
-    status?:string
+    wardno: number,
+    Address: string,
+    union: number,
+    status?: string,
+    candidateImg?: string,
+    symbolImg?: string
 }
 
 const candidateSchema = new Schema<Candidate>({
@@ -21,17 +23,23 @@ const candidateSchema = new Schema<Candidate>({
         type: String,
         required: [true, "Area of voting should not be empty!"]
     },
-    Address:{
+    Address: {
+        type: String
+    },
+    wardno: {
+        type: Number,
+        required: true
+    },
+    union: {
+        type: Number,
+        required: true
+    }, status: { type: String, enum: ["Active", "Withdraw", "Removed"] },
+    candidateImg:{
         type:String
     },
-    wardno:{
-        type:Number,
-        required: true
-    },
-    union:{
-        type:Number,
-        required: true
-    }, status: { type: String, enum: ["Active", "Withdraw", "Removed"] }
+    symbolImg:{
+        type: String
+    }
 
 }, { timestamps: true });
 

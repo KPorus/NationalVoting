@@ -1,5 +1,6 @@
 import { CandidateList, Candidate } from './../../models/candidate.model';
 import { AdminInfo, Info } from "../../models/admin/admininfo.model";
+const cloudinary = require("../../../utils/cloudinary");
 const xlsx = require("xlsx");
 const fs = require("fs");
 interface Body
@@ -93,11 +94,35 @@ const updateCandidate = async (data: Candidate) =>
     delete updatedData._id; // Remove _id field from updated data
 
     const result = await CandidateList.updateOne({ _id: id }, updatedData);
-    console.log(result);
 
     if (result.modifiedCount > 0)
     {
-        return { success: true, message:"Candidate information updated!!" };
+        return { success: true, message: "Candidate information updated!!" };
+    } else
+    {
+        return { success: false, message: 'No document was modified' };
+    }
+}
+
+const candidateImgUpload = async (body: { _id: string }, data: Express.Multer.File | undefined) =>
+{
+    const result = cloudinary.uploader.upload(data?.path, async (err: any, result: any) =>
+    {
+        if (err)
+        {
+            return { success: false, message: err };
+        }
+        return result;
+        
+    })    
+    const value = await result;
+    const upload = await CandidateList.updateOne({ _id: body._id }, {
+        candidateImg: value.secure_url
+    })
+
+    if (upload.modifiedCount > 0)
+    {
+        return { success: true, message: "Candidate image upload!!" };
     } else
     {
         return { success: false, message: 'No document was modified' };
@@ -105,5 +130,5 @@ const updateCandidate = async (data: Candidate) =>
 }
 
 export const adminService = {
-    login, uploadCandidate, getCandidate, updateCandidate
+    login, uploadCandidate, getCandidate, updateCandidate, candidateImgUpload
 }

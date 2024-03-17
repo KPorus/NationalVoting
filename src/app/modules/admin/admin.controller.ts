@@ -19,10 +19,22 @@ const multerXlsxConfig = multer.diskStorage({
         );
     },
 });
+// Configure multer storage for Img files
+const multerImgConfig = multer.diskStorage({
+    filename: function (req:Request, file:any, cb:any)
+    {
+        cb(null, file.originalname)
+    }
+});
 
 // Middleware to upload XLSX files using multer
 export const uploadXlsx = multer({
     storage: multerXlsxConfig,
+});
+
+// Middleware to upload img files using multer
+export const uploadImg = multer({
+    storage: multerImgConfig,
 });
 
 const signToken = (id: string) =>
@@ -118,7 +130,6 @@ const updateCandidate= async(req:Request, res:Response)=>
 {
     try {
         const Candidate = await adminService.updateCandidate(req.body);
-        console.log(Candidate);
         if(Candidate.success)
         {
             return res.status(200).json({ status: "Success", message:Candidate.message});
@@ -130,6 +141,31 @@ const updateCandidate= async(req:Request, res:Response)=>
         res.status(500).json({ status: "Fail", message: "Internal server error." });
     }
 }
+
+const candidateImgUpload= async(req:Request, res:Response)=>
+{
+    try {
+        const input = req.file;
+
+        if (!input)
+        {
+            return res.status(400).send('No file uploaded.');
+        }
+        const data = JSON.parse(req.body.data)
+        
+        const result = await adminService.candidateImgUpload(data, input);
+        if (result.success)
+        {
+            return res.status(200).json({ status: "Success", message: result.message });
+        }
+        else
+        {
+            return res.status(200).json({ status: "Fail", message: result.message });
+        }
+    } catch (error) {
+        res.status(500).json({ status: "Fail", message:error });
+    }
+}
 export const adminController = {
-    login, uploadCandidate, getAllCandidate, updateCandidate
+    login, uploadCandidate, getAllCandidate, updateCandidate, candidateImgUpload
 }
