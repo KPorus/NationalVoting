@@ -1,13 +1,14 @@
-import { Schema, model, ObjectId } from 'mongoose';
+import { Schema, model, Types } from 'mongoose';
 // Creating an interface
 export interface Candidate
 {
-    _id: ObjectId,
+    _id?: Types.ObjectId,
     name: string,
     Area0fvoting: string,
     wardno:number,
     Address:string,
-    union:number
+    union:number,
+    status?:string
 }
 
 const candidateSchema = new Schema<Candidate>({
@@ -30,7 +31,7 @@ const candidateSchema = new Schema<Candidate>({
     union:{
         type:Number,
         required: true
-    }
+    }, status: { type: String, enum: ["Active", "Withdraw", "Removed"] }
 
 }, { timestamps: true });
 

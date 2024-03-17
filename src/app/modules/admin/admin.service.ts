@@ -8,17 +8,6 @@ interface Body
     pass: string
 }
 
-interface CandidateData
-{
-    fieldname: string,
-    originalname: string,
-    encoding: string,
-    mimetype: string,
-    destination: string,
-    filename: string,
-    path: string,
-    size: number
-}
 interface UploadResult
 {
     numberOfCandidate: number;
@@ -28,7 +17,10 @@ interface UploadResult
 const login = async (data: Body): Promise<Info | null> =>
 {
     const user = await AdminInfo.findOne({
-        email: data.email
+        $and: [
+            { email: data.email },
+            { role: "admin" }
+        ]
     });
     return user
 }
@@ -48,7 +40,7 @@ const uploadCandidate = async (data: Express.Multer.File | undefined): Promise<U
     const metaData = xlsx.utils.sheet_to_json(file.Sheets[sheetNames[0]]);
     const numberOfUsers = metaData.length;
     let numberOfCandidate = 0;
-    
+
     for (const entry of metaData)
     {
         const name = entry["name"];
@@ -64,7 +56,7 @@ const uploadCandidate = async (data: Express.Multer.File | undefined): Promise<U
             ]
         });
         // Check for duplicate name
-        if (check.length>0)
+        if (check.length > 0)
         {
             continue;
         } else
@@ -75,7 +67,8 @@ const uploadCandidate = async (data: Express.Multer.File | undefined): Promise<U
                 Area0fvoting,
                 Address,
                 wardno: wardNo,
-                union
+                union,
+                status: "Active"
             });
             numberOfCandidate++;
         }
@@ -83,7 +76,34 @@ const uploadCandidate = async (data: Express.Multer.File | undefined): Promise<U
     fs.unlinkSync(`file/${data.filename}`);
     return Promise.resolve({ numberOfCandidate, numberOfUsers });
 }
+const getCandidate = async (): Promise<Candidate[] | null> =>
+{
+    const user = await CandidateList.find();
+    if (user.length > 0)
+    {
+        return user
+    }
+    return null;
+}
+
+const updateCandidate = async (data: Candidate) =>
+{
+    const id = data._id;
+    const updatedData = { ...data };
+    delete updatedData._id; // Remove _id field from updated data
+
+    const result = await CandidateList.updateOne({ _id: id }, updatedData);
+    console.log(result);
+
+    if (result.modifiedCount > 0)
+    {
+        return { success: true, message:"Candidate information updated!!" };
+    } else
+    {
+        return { success: false, message: 'No document was modified' };
+    }
+}
 
 export const adminService = {
-    login, uploadCandidate
+    login, uploadCandidate, getCandidate, updateCandidate
 }

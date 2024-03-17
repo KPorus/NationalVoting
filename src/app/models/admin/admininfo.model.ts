@@ -5,6 +5,7 @@ export interface Info
     _id: ObjectId,
     email: string,
     pass: string,
+    role: string
 }
 
 const infoSchema = new Schema<Info>({
@@ -17,7 +18,7 @@ const infoSchema = new Schema<Info>({
         type: String,
         required: [true, "password should not be empty!"]
     },
-
+    role: { type: String }
 }, { timestamps: true });
 
 export const AdminInfo = model<Info>('AdminInfo', infoSchema);

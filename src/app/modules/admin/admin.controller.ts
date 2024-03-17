@@ -1,3 +1,4 @@
+import { Candidate } from './../../models/candidate.model';
 import jwt from "jsonwebtoken"
 import { Request, Response } from "express";
 import { adminService } from "./admin.service";
@@ -100,6 +101,35 @@ const uploadCandidate = async (req: Request, res: Response) =>
     }
 }
 
+const getAllCandidate = async (req: Request, res: Response) =>
+{
+    try
+    {
+        const Candidate = await adminService.getCandidate();
+        if(Candidate){
+            return res.status(200).json({ status: "Success", Candidate });
+        }
+    } catch (error)
+    {
+        res.status(500).json({ status: "Fail", message: "Internal server error." });
+    }
+}
+const updateCandidate= async(req:Request, res:Response)=>
+{
+    try {
+        const Candidate = await adminService.updateCandidate(req.body);
+        console.log(Candidate);
+        if(Candidate.success)
+        {
+            return res.status(200).json({ status: "Success", message:Candidate.message});
+        }
+        else{
+            return res.status(200).json({ status: "Fail", message: Candidate.message });
+        }
+    } catch (error) {
+        res.status(500).json({ status: "Fail", message: "Internal server error." });
+    }
+}
 export const adminController = {
-    login, uploadCandidate
+    login, uploadCandidate, getAllCandidate, updateCandidate
 }
