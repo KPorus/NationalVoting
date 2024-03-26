@@ -43,9 +43,9 @@ const candidateSchema = new Schema<Candidate>({
     },
     votingCount: {
         type: Number,
-        default: 0, // Set a default value to handle cases where votingCount is not provided
+        default: 0,
         validate: {
-            validator: (value: any) => !isNaN(value), // Ensure that the value is a valid number
+            validator: (value: any) => !isNaN(value),
             message: "Voting count must be a number"
         }
     }
