@@ -10,7 +10,8 @@ export interface Candidate
     union: number,
     status?: string,
     candidateImg?: string,
-    symbolImg?: string
+    symbolImg?: string,
+    votingCount:number
 }
 
 const candidateSchema = new Schema<Candidate>({
@@ -39,12 +40,17 @@ const candidateSchema = new Schema<Candidate>({
     },
     symbolImg:{
         type: String
+    },
+    votingCount: {
+        type: Number,
+        default: 0, // Set a default value to handle cases where votingCount is not provided
+        validate: {
+            validator: (value: any) => !isNaN(value), // Ensure that the value is a valid number
+            message: "Voting count must be a number"
+        }
     }
 
 }, { timestamps: true });
-
-// Define unique index on 'name' and 'wardNo'
-candidateSchema.index({ name: 1, wardNo: 1 }, { unique: true });
 
 
 export const CandidateList = model<Candidate>('Candidate', candidateSchema);

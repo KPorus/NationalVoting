@@ -60,6 +60,25 @@ const register = async (req: Request, res: Response) =>
         res.status(500).json({ status: "Fail", message: `Internal server error. ${err}` })
     }
 }
+
+const vote = async (req: Request, res: Response) =>
+{
+    try
+    {
+        const user = await userService.vote(req.body)
+        if (user)
+        {
+            return res.status(200).json({ status: "succes", message: "Vote successfull" })
+        }
+        else
+        {
+            return res.status(400).json({ status: "Fail", message: "Vote unsuccessfull." })
+        }
+    } catch (err)
+    {
+        res.status(500).json({ status: "Fail", message: `Internal server error. ${err}` })
+    }
+}
 export const userController = {
-    login, register
+    login, register, vote
 }

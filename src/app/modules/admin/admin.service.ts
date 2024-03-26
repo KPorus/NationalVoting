@@ -1,5 +1,6 @@
 import { CandidateList, Candidate } from './../../models/candidate.model';
 import { AdminInfo, Info } from "../../models/admin/admininfo.model";
+import { ObjectId } from 'mongoose';
 const cloudinary = require("../../../utils/cloudinary");
 const xlsx = require("xlsx");
 const fs = require("fs");
@@ -7,6 +8,13 @@ interface Body
 {
     email: string,
     pass: string
+}
+
+interface AdminBody
+{
+    _id: ObjectId,
+    email: string,
+    role: string
 }
 
 interface UploadResult
@@ -113,8 +121,8 @@ const candidateImgUpload = async (body: { _id: string }, data: Express.Multer.Fi
             return { success: false, message: err };
         }
         return result;
-        
-    })    
+
+    })
     const value = await result;
     const upload = await CandidateList.updateOne({ _id: body._id }, {
         candidateImg: value.secure_url
@@ -129,6 +137,15 @@ const candidateImgUpload = async (body: { _id: string }, data: Express.Multer.Fi
     }
 }
 
+const displayAdminInfo = async (body: { _id: string }):Promise<AdminBody | null> =>
+{
+    const result = await AdminInfo.findOne({ _id: body._id },{ pass: 0 });
+    if(result)
+    {
+        return result
+    }
+    return null
+}
 export const adminService = {
-    login, uploadCandidate, getCandidate, updateCandidate, candidateImgUpload
+    login, uploadCandidate, getCandidate, updateCandidate, candidateImgUpload, displayAdminInfo
 }

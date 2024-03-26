@@ -60,7 +60,7 @@ const login = async (req: Request, res: Response) =>
             if (user.pass == req.body.pass)
             {
                 const token = signToken(user._id.toString());
-                return res.status(200).json({ status: "Succes", message: "User login succesfull", token: token })
+                return res.status(200).json({ status: "Succes", message: "User login succesfull", userId:user._id,token: token })
             }
             else
             {
@@ -166,6 +166,21 @@ const candidateImgUpload= async(req:Request, res:Response)=>
         res.status(500).json({ status: "Fail", message:error });
     }
 }
+
+const displayAdminInfo = async(req:Request,res:Response)=>
+{
+    try {
+        const admin = await adminService.displayAdminInfo(req.body);
+        if(admin)
+        {
+            res.status(200).json({status:"Success", message: admin})
+        }else{
+            return res.status(200).json({ status: "Fail" });
+        }
+    } catch (error) {
+        res.status(500).json({ status: "Fail", message: error });
+    }
+}
 export const adminController = {
-    login, uploadCandidate, getAllCandidate, updateCandidate, candidateImgUpload
+    login, uploadCandidate, getAllCandidate, updateCandidate, candidateImgUpload, displayAdminInfo
 }

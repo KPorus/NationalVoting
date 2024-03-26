@@ -4,6 +4,7 @@ import { protect } from "../../../middleware/protect";
 const router = express.Router();
 
 router.post('/login', adminController.login);
+router.get('/display', adminController.displayAdminInfo);
 router.post('/upload', protect,uploadXlsx.single('file'),adminController.uploadCandidate)
 router.get('/candidate', protect, adminController.getAllCandidate);
 router.patch('/update', protect,adminController.updateCandidate);
