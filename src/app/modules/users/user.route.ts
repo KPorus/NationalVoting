@@ -6,6 +6,6 @@ const router = express.Router();
 router.post('/login', userController.login);
 router.post('/register',userController.register);
 router.post('/vote', userController.vote);
-router.post('/allCandidate', protect.userMiddleware, userController.allCandidate);
+router.get('/candidates', protect.userMiddleware, userController.allCandidate);
 
 export const userRouter = router;

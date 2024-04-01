@@ -2,6 +2,7 @@ import { AdminInfo } from '../app/models/admin/admininfo.model';
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken"
 import { Types } from 'mongoose';
+import { UserInfo } from '../app/models/users/userinfo.model';
 type jwtTest = jwt.JwtPayload | {
     _id: Types.ObjectId
 }
@@ -24,19 +25,23 @@ const adminMiddleware = async (req: Request, res: Response, next: NextFunction) 
             // Verify the token using the JWT_SECRET from environment variables
             let decodedToken = jwt.verify(token, process.env.JWT_SECRET as string);
             const verifyUser = decodedToken as jwtTest;
-            if (verifyUser && '_id' in verifyUser)
+            if (verifyUser && 'id' in verifyUser)
             {
                 // Fetch the user from the database using the decoded token
-                const user = await AdminInfo.findOne({ _id: verifyUser._id });
-                
+                const user = await AdminInfo.findOne({ _id: verifyUser.id });
                 // Attach the user to the request object
                 if(user?.role == "admin")
                 {
                     req.user = user;
+                    next();
+                }else{
+                    return res.status(401).json({ message: "Unauthorized" });
                 }
+            }else{
+                return res.status(401).json({ message: "Unauthorized" });
             }
 
-            next();
+            
         } catch (err)
         {
             // Handle errors from jwt.verify
@@ -67,19 +72,24 @@ const userMiddleware = async (req: Request, res: Response, next: NextFunction) =
             // Verify the token using the JWT_SECRET from environment variables
             let decodedToken = jwt.verify(token, process.env.JWT_SECRET as string);
             const verifyUser = decodedToken as jwtTest;
-            if (verifyUser && '_id' in verifyUser)
+            if (verifyUser && 'id' in verifyUser)
             {
                 // Fetch the user from the database using the decoded token
-                const user = await AdminInfo.findOne({ _id: verifyUser._id });
+                const user = await UserInfo.findOne({ _id: verifyUser.id });
 
                 // Attach the user to the request object
                 if (user?.role == "user")
                 {
                     req.user = user;
+                    next();
+                } else
+                {
+                    return res.status(401).json({ message: "Unauthorized" });
                 }
+            } else
+            {
+                return res.status(401).json({ message: "Unauthorized" });
             }
-
-            next();
         } catch (err)
         {
             // Handle errors from jwt.verify

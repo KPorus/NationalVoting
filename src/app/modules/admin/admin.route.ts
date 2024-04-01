@@ -6,7 +6,7 @@ const router = express.Router();
 router.post('/login', adminController.login);
 router.get('/display', adminController.displayAdminInfo);
 router.post('/upload', protect.adminMiddleware,uploadXlsx.single('file'),adminController.uploadCandidate)
-router.get('/candidate', protect.adminMiddleware, adminController.getAllCandidate);
+router.get('/candidates', protect.adminMiddleware, adminController.getAllCandidate);
 router.patch('/update', protect.adminMiddleware,adminController.updateCandidate);
 router.post('/uploadImg', protect.adminMiddleware, uploadImg.single('image'), adminController.candidateImgUpload);
 
