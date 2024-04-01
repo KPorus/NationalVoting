@@ -1,3 +1,4 @@
+import { AdminInfo } from "../../models/admin/admininfo.model";
 import { CandidateList } from "../../models/candidate.model";
 import { Info, UserInfo } from "../../models/users/userinfo.model"
 import { Types } from 'mongoose';
@@ -12,7 +13,10 @@ const register = async (data: Body): Promise<Info | null> =>
     const check = await UserInfo.findOne({
         email: data.email
     });
-    if (check)
+    const checkAdmin = await AdminInfo.findOne({
+        email: data.email
+    });
+    if (check || checkAdmin)
     {
         let user = null;
         return user;
