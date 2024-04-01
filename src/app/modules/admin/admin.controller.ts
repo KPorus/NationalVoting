@@ -37,11 +37,11 @@ export const uploadImg = multer({
     storage: multerImgConfig,
 });
 
-const signToken = (id: string) =>
+const signToken = (id: string,email:String) =>
 {
     return jwt.sign(
         {
-            id,
+            id,email
         },
         process.env.JWT_SECRET as string,
         {
@@ -59,8 +59,8 @@ const login = async (req: Request, res: Response) =>
         {
             if (user.pass == req.body.pass)
             {
-                const token = signToken(user._id.toString());
-                return res.status(200).json({ status: "Succes", message: "User login succesfull", userId:user._id,token: token })
+                const token = signToken(user._id.toString(),user.email.toString());
+                return res.status(200).json({ status: "Succes", message: "User login succesfull",token: token })
             }
             else
             {
