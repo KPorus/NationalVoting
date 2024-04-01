@@ -6,6 +6,7 @@ export interface Info
     email: string,
     pass: string,
     voteCandidate: Types.ObjectId | null
+    role: string
 }
 
 const infoSchema = new Schema<Info>({
@@ -21,8 +22,8 @@ const infoSchema = new Schema<Info>({
     voteCandidate: {
         type: Types.ObjectId,
         ref: 'Candidate'
-    }
-
+    },
+    role: { type: String }
 }, { timestamps: true });
 
 export const UserInfo = model<Info>('UserInfo', infoSchema);

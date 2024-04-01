@@ -5,9 +5,9 @@ const router = express.Router();
 
 router.post('/login', adminController.login);
 router.get('/display', adminController.displayAdminInfo);
-router.post('/upload', protect,uploadXlsx.single('file'),adminController.uploadCandidate)
-router.get('/candidate', protect, adminController.getAllCandidate);
-router.patch('/update', protect,adminController.updateCandidate);
-router.post('/uploadImg', protect, uploadImg.single('image'), adminController.candidateImgUpload);
+router.post('/upload', protect.adminMiddleware,uploadXlsx.single('file'),adminController.uploadCandidate)
+router.get('/candidate', protect.adminMiddleware, adminController.getAllCandidate);
+router.patch('/update', protect.adminMiddleware,adminController.updateCandidate);
+router.post('/uploadImg', protect.adminMiddleware, uploadImg.single('image'), adminController.candidateImgUpload);
 
 export const adminRouter = router;

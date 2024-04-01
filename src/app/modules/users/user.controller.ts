@@ -79,6 +79,24 @@ const vote = async (req: Request, res: Response) =>
         res.status(500).json({ status: "Fail", message: `Internal server error. ${err}` })
     }
 }
+const allCandidate = async (req: Request, res: Response) =>
+{
+    try
+    {
+        const user = await userService.allCandidate()
+        if (user?.length>0)
+        {
+            return res.status(200).json({ status: "succes", view:"user", user })
+        }
+        else
+        {
+            return res.status(400).json({ status: "Fail", message: "Candidate not found" })
+        }
+    } catch (err)
+    {
+        res.status(500).json({ status: "Fail", message: `Internal server error. ${err}` })
+    }
+}
 export const userController = {
-    login, register, vote
+    login, register, vote, allCandidate
 }

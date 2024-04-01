@@ -17,7 +17,9 @@ const register = async (data: Body): Promise<Info | null> =>
         let user = null;
         return user;
     }
-    const user = await UserInfo.create(data);
+    const value = { ...data, role: "user" };
+    console.log(value);
+    const user = await UserInfo.create(value);
     return user
 }
 
@@ -46,8 +48,17 @@ const vote = async (data: { _id: string, userId:Types.ObjectId }) =>
 
     return null;
 };
+const allCandidate = async () =>
+{
+    const candidate = await CandidateList.find();
+    if(candidate.length>0)
+    {
+        return candidate
+    }
+    return [];
+};
 
 
 export const userService = {
-    login, register, vote
+    login, register, vote, allCandidate
 }
