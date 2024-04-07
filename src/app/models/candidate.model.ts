@@ -11,7 +11,8 @@ export interface Candidate
     status?: string,
     candidateImg?: string,
     symbolImg?: string,
-    votingCount:number
+    votingCount: number,
+    voterId: string,
 }
 
 const candidateSchema = new Schema<Candidate>({
@@ -35,10 +36,10 @@ const candidateSchema = new Schema<Candidate>({
         type: Number,
         required: true
     }, status: { type: String, enum: ["Active", "Withdraw", "Removed"] },
-    candidateImg:{
-        type:String
+    candidateImg: {
+        type: String
     },
-    symbolImg:{
+    symbolImg: {
         type: String
     },
     votingCount: {
@@ -48,7 +49,7 @@ const candidateSchema = new Schema<Candidate>({
             validator: (value: any) => !isNaN(value),
             message: "Voting count must be a number"
         }
-    }
+    }, voterId: { type: String, required: [true, "Please provide voter id."] }
 
 }, { timestamps: true });
 

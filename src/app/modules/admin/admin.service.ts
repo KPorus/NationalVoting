@@ -1,6 +1,7 @@
 import { CandidateList, Candidate } from './../../models/candidate.model';
 import { AdminInfo, Info } from "../../models/admin/admininfo.model";
 import { ObjectId } from 'mongoose';
+import { UserInfo } from '../../models/users/userinfo.model';
 const cloudinary = require("../../../utils/cloudinary");
 const xlsx = require("xlsx");
 const fs = require("fs");
@@ -15,6 +16,14 @@ interface AdminBody
     _id: ObjectId,
     email: string,
     role: string
+}
+
+interface VoterBody
+{
+    _id: ObjectId,
+    email: string,
+    voteCandidate: ObjectId | null
+    voterId: string,
 }
 
 interface UploadResult
@@ -57,11 +66,13 @@ const uploadCandidate = async (data: Express.Multer.File | undefined): Promise<U
         const Area0fvoting = entry["Area0fvoting"];
         const Address = entry["Address"];
         const union = entry["union"];
+        const voterId = entry["VoterId"];
 
         const check = await CandidateList.find({
             $or: [
                 { name: name },
-                { Area0fvoting: Area0fvoting }
+                { Area0fvoting: Area0fvoting },
+                { voterId: voterId }
             ]
         });
         // Check for duplicate name
@@ -77,7 +88,8 @@ const uploadCandidate = async (data: Express.Multer.File | undefined): Promise<U
                 Address,
                 wardno: wardNo,
                 union,
-                status: "Active"
+                status: "Active",
+                voterId
             });
             numberOfCandidate++;
         }
@@ -146,6 +158,16 @@ const displayAdminInfo = async (body: { _id: string }):Promise<AdminBody | null>
     }
     return null
 }
+const getAllVoters = async (): Promise<VoterBody[] | null> =>
+{
+    const result: VoterBody[] = await UserInfo.find().select('-pass -role');
+    if (result.length > 0)
+    {
+        return result;
+    }
+    return null;
+}
+
 export const adminService = {
-    login, uploadCandidate, getCandidate, updateCandidate, candidateImgUpload, displayAdminInfo
+    login, uploadCandidate, getCandidate, updateCandidate, candidateImgUpload, displayAdminInfo, getAllVoters
 }

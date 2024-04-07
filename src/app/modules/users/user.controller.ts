@@ -53,7 +53,7 @@ const register = async (req: Request, res: Response) =>
         }
         else
         {
-            return res.status(400).json({ status: "Fail", message: "User not registered. Please check your network connection or Check your email. Two account same email is not acceptable." })
+            return res.status(400).json({ status: "Fail", message: "User not registered. Please check your network connection or Check your email and your voter Id. Two account same email is not acceptable. Different email and same voter id not acceptable." })
         }
     } catch (err)
     {
