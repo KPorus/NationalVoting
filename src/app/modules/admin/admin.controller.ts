@@ -181,9 +181,9 @@ const displayAdminInfo = async (req: Request, res: Response) => {
 };
 const getAllVoters = async (req: Request, res: Response) => {
   try {
-      const user = await adminService.getAllVoters();
+      const user = await adminService.getAllVoters(req.body);
     if (user) {
-      res.status(200).json({ status: "Success", message: user });
+      res.status(200).json({ status: "Success", user });
     } else {
       return res.status(200).json({ status: "Fail" });
     }

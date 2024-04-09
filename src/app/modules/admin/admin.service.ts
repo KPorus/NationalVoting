@@ -25,7 +25,13 @@ interface VoterBody
     voteCandidate: ObjectId | null
     voterId: string,
 }
-
+interface VoterPage
+{
+    pageIndex: number,
+    next?: ObjectId,
+    prev?: ObjectId,
+    pageSize: number
+}
 interface UploadResult
 {
     numberOfCandidate: number;
@@ -149,25 +155,58 @@ const candidateImgUpload = async (body: { _id: string }, data: Express.Multer.Fi
     }
 }
 
-const displayAdminInfo = async (body: { _id: string }):Promise<AdminBody | null> =>
+const displayAdminInfo = async (body: { _id: string }): Promise<AdminBody | null> =>
 {
-    const result = await AdminInfo.findOne({ _id: body._id },{ pass: 0 });
-    if(result)
+    const result = await AdminInfo.findOne({ _id: body._id }, { pass: 0 });
+    if (result)
     {
         return result
     }
     return null
 }
-const getAllVoters = async (): Promise<VoterBody[] | null> =>
+
+const getAllVoters = async (data: VoterPage): Promise<{ voters: VoterBody[], nextPage: number | null, prevPage: number | null, next: ObjectId | null, prev: ObjectId | null } | null> =>
 {
-    const result: VoterBody[] = await UserInfo.find().select('-pass -role');
-    if (result.length > 0)
+    const skipCount = (data.pageIndex - 2) * data.pageSize;
+    let result: VoterBody[];
+    let next: ObjectId | null = null;
+    let prev: ObjectId | null = null;
+    let nextPage: number | null = null;
+    let prevPage: number | null = null;
+
+    if (data.pageIndex == 1)
     {
-        return result;
+        result = await UserInfo.find({}).limit(data.pageSize).select('-pass -role');
+        if (result.length > 0)
+        {
+            next = result[result.length - 1]._id;
+            nextPage = data.pageIndex + 1;
+            return { voters: result, next, prev, nextPage, prevPage };
+        }
+    } else if (data.pageIndex > 1 && data.prev)
+    {
+        result = await UserInfo.find({ _id: { $gt: data.prev } }).skip(skipCount < 0 ? 0 : skipCount).limit(data.pageSize).select('-pass -role');
+        if (result.length > 0)
+        {
+            next = result[result.length - 1]._id;
+            nextPage = data.pageIndex + 1;
+            prevPage = data.pageIndex - 1;
+            return { voters: result, next, prev, nextPage, prevPage };
+        }
+    } else if (data.pageIndex > 1 && data.next)
+    {
+        prev = data.next;
+        result = await UserInfo.find({ _id: { $lt: data.next } }).skip(skipCount < 0 ? 0 : skipCount).limit(data.pageSize).select('-pass -role');
+        if (result.length > 0)
+        {
+            next = result[result.length - 1]._id;
+            nextPage = data.pageIndex + 1;
+            prevPage = data.pageIndex - 1;
+            return { voters: result, next, prev, nextPage, prevPage };
+        }
     }
     return null;
 }
-
 export const adminService = {
     login, uploadCandidate, getCandidate, updateCandidate, candidateImgUpload, displayAdminInfo, getAllVoters
 }
