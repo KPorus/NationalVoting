@@ -189,24 +189,36 @@ const getAllVoters = async (data: VoterPage): Promise<{ voters: VoterBody[], nex
         {
             return null; // No data found
         }
-    } else if (data.pageIndex >=1 && data.prev)
+    } else if (data.pageIndex >= 1 && data.prev)
     {
+        const resultCount = await UserInfo.countDocuments({ _id: { $lt: data.prev } });
+        const pageCount = Math.ceil(resultCount / data.pageSize);
+        const lastPage = pageCount > 0 ? pageCount : 1;
+
         result = await UserInfo.find({ _id: { $lt: data.prev } }).sort({ _id: -1 }).limit(data.pageSize).select('-pass -role');
-        if (result.length > 0 && data.pageIndex>1)
+
+        if (result.length > 0 && data.pageIndex > 1)
         {
             next = data.prev;
             prev = result[result.length - 1]._id;
             nextPage = data.pageIndex + 1;
             prevPage = data.pageIndex - 1;
-            return { voters: result.reverse(), next, prev, nextPage, prevPage }; // Reverse result to maintain ascending order
-        } else if(data.pageIndex==1)
-        {
-            next = data.prev;
-            nextPage = data.pageIndex + 1;
-            prevPage = 0;
             return { voters: result.reverse(), next, prev, nextPage, prevPage };
         }
-    } else if (data.pageIndex > 1 && data.next)
+        else if (data.pageIndex === 1) // Special case for first page
+        {
+            //next = result.length > 0 ? result[result.length - 1]._id : null;
+            next=data.prev;
+            nextPage = data.pageIndex + 1;
+            prevPage = null;
+            return { voters: result.reverse(), next, prev, nextPage, prevPage };
+        }
+        else if (data.pageIndex > lastPage) // If pageIndex exceeds last page, return null
+        {
+            return null;
+        }
+    }
+    else if (data.pageIndex > 1 && data.next)
     {
         result = await UserInfo.find({ _id: { $gt: data.next } }).sort({ _id: 1 }).limit(data.pageSize).select('-pass -role');
         if (result.length > 0)
