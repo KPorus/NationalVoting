@@ -167,46 +167,66 @@ const displayAdminInfo = async (body: { _id: string }): Promise<AdminBody | null
 
 const getAllVoters = async (data: VoterPage): Promise<{ voters: VoterBody[], nextPage: number | null, prevPage: number | null, next: ObjectId | null, prev: ObjectId | null } | null> =>
 {
-    const skipCount = (data.pageIndex - 2) * data.pageSize;
+    const skipCount = (data.pageIndex - 1) * data.pageSize;
     let result: VoterBody[];
     let next: ObjectId | null = null;
     let prev: ObjectId | null = null;
     let nextPage: number | null = null;
     let prevPage: number | null = null;
 
-    if (data.pageIndex == 1)
+    if (data.pageIndex === 1 && !data.prev && !data.next)
     {
-        result = await UserInfo.find({}).limit(data.pageSize).select('-pass -role');
+        result = await UserInfo.find({}).sort({ _id: 1 }).limit(data.pageSize).select('-pass -role');
         if (result.length > 0)
         {
-            next = result[result.length - 1]._id;
-            nextPage = data.pageIndex + 1;
+            if (result.length === data.pageSize)
+            {
+                next = result[result.length - 1]._id;
+                nextPage = data.pageIndex + 1;
+            }
             return { voters: result, next, prev, nextPage, prevPage };
-        }
-    } else if (data.pageIndex > 1 && data.prev)
-    {
-        result = await UserInfo.find({ _id: { $gt: data.prev } }).skip(skipCount < 0 ? 0 : skipCount).limit(data.pageSize).select('-pass -role');
-        if (result.length > 0)
+        } else
         {
-            next = result[result.length - 1]._id;
+            return null; // No data found
+        }
+    } else if (data.pageIndex >=1 && data.prev)
+    {
+        result = await UserInfo.find({ _id: { $lt: data.prev } }).sort({ _id: -1 }).limit(data.pageSize).select('-pass -role');
+        if (result.length > 0 && data.pageIndex>1)
+        {
+            next = data.prev;
+            prev = result[result.length - 1]._id;
             nextPage = data.pageIndex + 1;
             prevPage = data.pageIndex - 1;
-            return { voters: result, next, prev, nextPage, prevPage };
+            return { voters: result.reverse(), next, prev, nextPage, prevPage }; // Reverse result to maintain ascending order
+        } else if(data.pageIndex==1)
+        {
+            next = data.prev;
+            nextPage = data.pageIndex + 1;
+            prevPage = 0;
+            return { voters: result.reverse(), next, prev, nextPage, prevPage };
         }
     } else if (data.pageIndex > 1 && data.next)
     {
-        prev = data.next;
-        result = await UserInfo.find({ _id: { $lt: data.next } }).skip(skipCount < 0 ? 0 : skipCount).limit(data.pageSize).select('-pass -role');
+        result = await UserInfo.find({ _id: { $gt: data.next } }).sort({ _id: 1 }).limit(data.pageSize).select('-pass -role');
         if (result.length > 0)
         {
-            next = result[result.length - 1]._id;
-            nextPage = data.pageIndex + 1;
+            prev = data.next;
+            if (result.length === data.pageSize)
+            {
+                next = result[result.length - 1]._id;
+                nextPage = data.pageIndex + 1;
+            }
             prevPage = data.pageIndex - 1;
             return { voters: result, next, prev, nextPage, prevPage };
+        } else
+        {
+            return null; // No more next page
         }
     }
-    return null;
+    return null; // Invalid parameters
 }
+
 export const adminService = {
     login, uploadCandidate, getCandidate, updateCandidate, candidateImgUpload, displayAdminInfo, getAllVoters
 }
