@@ -1,9 +1,10 @@
 import express from "express";
 import { adminController, uploadImg, uploadXlsx } from "./admin.controller";
 import { protect } from "../../../middleware/protect";
+import { limiter } from "../../../utils/limiter";
 const router = express.Router();
 
-router.post('/login', adminController.login);
+router.post('/login',limiter, adminController.login);
 router.get('/display', adminController.displayAdminInfo);
 router.get('/allVoter',
  protect.adminMiddleware,
