@@ -1,10 +1,11 @@
 import { Candidate } from "./../../models/candidate.model";
 import jwt from "jsonwebtoken";
+import {Schema } from 'mongoose';
 import { Request, Response } from "express";
-import { VoterPage, adminService } from "./admin.service";
+import { adminService } from "./admin.service";
 import multer from "multer";
-import { ObjectId } from "mongoose";
-const xlsx = require("xlsx");
+import { VoterPage } from "./admin.interface";
+
 const path = require("path");
 // Configure multer storage for XLSX files
 const multerXlsxConfig = multer.diskStorage({
@@ -186,8 +187,8 @@ const getAllVoters = async (req: Request, res: Response) => {
     const data: VoterPage = {
       pageSize: Number(req.query.pageSize),
       pageIndex: Number(req.query.pageIndex),
-      prev: req.query.prev === "null" ? null : req.query.prev,
-      next: req.query.next === "null" ? null : req.query.next,
+      prev: req.query.prev === "null" ? undefined : new Schema.Types.ObjectId(req.query.prev as string),
+      next: req.query.next === "null" ? undefined : new Schema.Types.ObjectId(req.query.next as string),
     };
     console.log(data);
     const user = await adminService.getAllVoters(data);
