@@ -1,7 +1,7 @@
 import express from "express";
 import { adminController, uploadImg, uploadXlsx } from "./admin.controller";
 import { protect } from "../../../middleware/protect";
-import { limiter } from "../../../utils/limiter";
+import { limiter } from "../../../utils/limiter/limiter";
 const router = express.Router();
 
 router.post('/login',limiter, adminController.login);

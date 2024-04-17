@@ -1,12 +1,18 @@
 import { CandidateList, Candidate } from './../../models/candidate.model';
 import { AdminInfo, Info } from "./admininfo.model";
-import { ObjectId } from 'mongoose';
+import { ObjectId, Types } from 'mongoose';
 import { UserInfo } from '../users/userinfo.model';
-import { AdminBody, Body, UploadResult, VoterBody, VoterPage } from './admin.interface';
+import { AdminBody, Body, UploadResult, VoterBody} from './admin.interface';
 const cloudinary = require("../../../utils/cloudinary");
 const xlsx = require("xlsx");
 const fs = require("fs");
-
+export interface VoterPage
+{
+    pageIndex: number,
+    next?: Types.ObjectId,
+    prev?: Types.ObjectId,
+    pageSize: number
+}
 
 const login = async (data: Body): Promise<Info | null> =>
 {
@@ -135,12 +141,11 @@ const displayAdminInfo = async (body: { _id: string }): Promise<AdminBody | null
     return null
 }
 
-const getAllVoters = async (data: VoterPage): Promise<{ voters: VoterBody[], nextPage: number | null, prevPage: number | null, next: ObjectId | null, prev: ObjectId | null } | null> =>
+const getAllVoters = async (data: VoterPage): Promise<{ voters: VoterBody[], nextPage: number | null, prevPage: number | null, next: Types.ObjectId | null, prev: Types.ObjectId | null } | null> =>
 {
-    const skipCount = (data.pageIndex - 1) * data.pageSize;
     let result: VoterBody[];
-    let next: ObjectId | null = null;
-    let prev: ObjectId | null = null;
+    let next: Types.ObjectId | null = null;
+    let prev: Types.ObjectId | null = null;
     let nextPage: number | null = null;
     let prevPage: number | null = null;
 

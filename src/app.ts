@@ -1,11 +1,11 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from "helmet";
-const morgan = require("morgan");
-
 require("dotenv").config();
 import connectDB from './config/database';
 import router from './app/Router/router';
+import { morganMiddleware } from './utils/logger/logger';
+import { globalError } from './middleware/error-handler/globalErrorHandler';
 // import toobusy from "toobusy-js";
 
 
@@ -16,20 +16,23 @@ app.use(express.json());
 //Middleware
 app.use(helmet());
 app.use(cors());
-app.use(morgan("combined")); // Log HTTP requests
+app.use(morganMiddleware); // Log HTTP requests
 app.disable("x-powered-by");
 app.set("trust proxy", numberOfProxies);
 app.use(express.urlencoded({ extended: true }));
 
+//console.log(app.get("env"))
+
 app.use('/api/v1', router)
+app.use('/test', (req,res,next)=>{
+    throw new Error();
+})
 // Handler for route-not-found
-app.use((_req, res) =>
+app.all('*',(req, res,next) =>
 {
-    res.status(404).json({
-        code: 404,
-        status: "Error",
-        message: "Route not found."
-    });
+    const err = new Error("Invalid Route.")
+    next(err);
 });
+app.use(globalError);
 connectDB();
 export default app;

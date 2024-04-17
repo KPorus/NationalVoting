@@ -1,4 +1,4 @@
-import { ObjectId, Schema } from "mongoose";
+import { ObjectId, Schema, Types } from "mongoose";
 
 export interface Body
 {
@@ -20,13 +20,7 @@ export interface VoterBody
     voteCandidate: ObjectId | null
     voterId: string,
 }
-export interface VoterPage
-{
-    pageIndex: number,
-    next?: Schema.Types.ObjectId,
-    prev?: Schema.Types.ObjectId,
-    pageSize: number
-}
+
 export interface UploadResult
 {
     numberOfCandidate: number;
