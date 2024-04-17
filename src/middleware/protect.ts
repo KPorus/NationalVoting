@@ -20,6 +20,7 @@ const adminMiddleware = async (req: Request, res: Response, next: NextFunction) 
         const authHeader = req.headers["authorization"];
         const bearerToken = authHeader.split(" ");
         const token = bearerToken[0];
+        console.log(authHeader);
         try
         {
             // Verify the token using the JWT_SECRET from environment variables

@@ -1,8 +1,9 @@
 import { Candidate } from "./../../models/candidate.model";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
-import { adminService } from "./admin.service";
+import { VoterPage, adminService } from "./admin.service";
 import multer from "multer";
+import { ObjectId } from "mongoose";
 const xlsx = require("xlsx");
 const path = require("path");
 // Configure multer storage for XLSX files
@@ -181,7 +182,15 @@ const displayAdminInfo = async (req: Request, res: Response) => {
 };
 const getAllVoters = async (req: Request, res: Response) => {
   try {
-      const user = await adminService.getAllVoters(req.body);
+  // console.log(object);
+    const data: VoterPage = {
+      pageSize: Number(req.query.pageSize),
+      pageIndex: Number(req.query.pageIndex),
+      prev: req.query.prev === "null" ? null : req.query.prev,
+      next: req.query.next === "null" ? null : req.query.next,
+    };
+    console.log(data);
+    const user = await adminService.getAllVoters(data);
     if (user) {
       res.status(200).json({ status: "Success", user });
     } else {
@@ -200,3 +209,5 @@ export const adminController = {
   displayAdminInfo,
   getAllVoters,
 };
+
+

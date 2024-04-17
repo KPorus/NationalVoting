@@ -5,7 +5,9 @@ const router = express.Router();
 
 router.post('/login', adminController.login);
 router.get('/display', adminController.displayAdminInfo);
-router.get('/allVoter', protect.adminMiddleware, adminController.getAllVoters);
+router.get('/allVoter',
+ protect.adminMiddleware,
+  adminController.getAllVoters);
 router.post('/upload', protect.adminMiddleware,uploadXlsx.single('file'),adminController.uploadCandidate)
 router.get('/candidates', protect.adminMiddleware, adminController.getAllCandidate);
 router.patch('/update', protect.adminMiddleware,adminController.updateCandidate);
