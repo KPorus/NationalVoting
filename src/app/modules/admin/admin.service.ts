@@ -2,20 +2,18 @@ import { CandidateList, Candidate } from './../../models/candidate.model';
 import { AdminInfo, Info } from "./admininfo.model";
 import { ObjectId, Types } from 'mongoose';
 import { UserInfo } from '../users/userinfo.model';
-import { AdminBody, Body, UploadResult, VoterBody} from './admin.interface';
+import { AdminBody, Body, UploadResult, VoterBody } from './admin.interface';
 const cloudinary = require("../../../utils/cloudinary");
 const xlsx = require("xlsx");
 const fs = require("fs");
-export interface VoterPage
-{
+export interface VoterPage {
     pageIndex: number,
-    next?: Types.ObjectId,
-    prev?: Types.ObjectId,
+    next: null | string,
+    prev: null | string,
     pageSize: number
 }
 
-const login = async (data: Body): Promise<Info | null> =>
-{
+const login = async (data: Body): Promise<Info | null> => {
     const user = await AdminInfo.findOne({
         $and: [
             { email: data.email },
@@ -27,10 +25,8 @@ const login = async (data: Body): Promise<Info | null> =>
 
 
 
-const uploadCandidate = async (data: Express.Multer.File | undefined): Promise<UploadResult | null> =>
-{
-    if (!data)
-    {
+const uploadCandidate = async (data: Express.Multer.File | undefined): Promise<UploadResult | null> => {
+    if (!data) {
         return null;
     }
 
@@ -41,8 +37,7 @@ const uploadCandidate = async (data: Express.Multer.File | undefined): Promise<U
     const numberOfUsers = metaData.length;
     let numberOfCandidate = 0;
 
-    for (const entry of metaData)
-    {
+    for (const entry of metaData) {
         const name = entry["name"];
         const wardNo = entry["Ward no"];
         const Area0fvoting = entry["Area0fvoting"];
@@ -58,11 +53,9 @@ const uploadCandidate = async (data: Express.Multer.File | undefined): Promise<U
             ]
         });
         // Check for duplicate name
-        if (check.length > 0)
-        {
+        if (check.length > 0) {
             continue;
-        } else
-        {
+        } else {
             // Create candidate record
             await CandidateList.create({
                 name,
@@ -79,39 +72,31 @@ const uploadCandidate = async (data: Express.Multer.File | undefined): Promise<U
     fs.unlinkSync(`file/${data.filename}`);
     return Promise.resolve({ numberOfCandidate, numberOfUsers });
 }
-const getCandidate = async (): Promise<Candidate[] | null> =>
-{
+const getCandidate = async (): Promise<Candidate[] | null> => {
     const user = await CandidateList.find();
-    if (user.length > 0)
-    {
+    if (user.length > 0) {
         return user
     }
     return null;
 }
 
-const updateCandidate = async (data: Candidate) =>
-{
+const updateCandidate = async (data: Candidate) => {
     const id = data._id;
     const updatedData = { ...data };
     delete updatedData._id; // Remove _id field from updated data
 
     const result = await CandidateList.updateOne({ _id: id }, updatedData);
 
-    if (result.modifiedCount > 0)
-    {
+    if (result.modifiedCount > 0) {
         return { success: true, message: "Candidate information updated!!" };
-    } else
-    {
+    } else {
         return { success: false, message: 'No document was modified' };
     }
 }
 
-const candidateImgUpload = async (body: { _id: string }, data: Express.Multer.File | undefined) =>
-{
-    const result = cloudinary.uploader.upload(data?.path, async (err: any, result: any) =>
-    {
-        if (err)
-        {
+const candidateImgUpload = async (body: { _id: string }, data: Express.Multer.File | undefined) => {
+    const result = cloudinary.uploader.upload(data?.path, async (err: any, result: any) => {
+        if (err) {
             return { success: false, message: err };
         }
         return result;
@@ -122,60 +107,49 @@ const candidateImgUpload = async (body: { _id: string }, data: Express.Multer.Fi
         candidateImg: value.secure_url
     })
 
-    if (upload.modifiedCount > 0)
-    {
+    if (upload.modifiedCount > 0) {
         return { success: true, message: "Candidate image upload!!" };
-    } else
-    {
+    } else {
         return { success: false, message: 'No document was modified' };
     }
 }
 
-const displayAdminInfo = async (body: { _id: string }): Promise<AdminBody | null> =>
-{
+const displayAdminInfo = async (body: { _id: string }): Promise<AdminBody | null> => {
     const result = await AdminInfo.findOne({ _id: body._id }, { pass: 0 });
-    if (result)
-    {
+    if (result) {
         return result
     }
     return null
 }
 
-const getAllVoters = async (data: VoterPage): Promise<{ voters: VoterBody[], nextPage: number | null, prevPage: number | null, next: Types.ObjectId | null, prev: Types.ObjectId | null } | null> =>
-{
+const getAllVoters = async (data: VoterPage): Promise<{ voters: VoterBody[], nextPage: number | null, prevPage: number | null, next: string | null, prev: string | null } | null> => {
     let result: VoterBody[];
-    let next: Types.ObjectId | null = null;
-    let prev: Types.ObjectId | null = null;
+    let next: string | null = null;
+    let prev: string | null = null;
     let nextPage: number | null = null;
     let prevPage: number | null = null;
 
-    if (data.pageIndex === 1 && !data.prev && !data.next)
-    {
+    if (data.pageIndex === 1 && !data.prev && !data.next) {
         result = await UserInfo.find({}).sort({ _id: 1 }).limit(data.pageSize).select('-pass -role');
-        if (result.length > 0)
-        {
-            if (result.length === data.pageSize)
-            {
-                next = result[result.length - 1]._id;
+        if (result.length > 0) {
+            if (result.length === data.pageSize) {
+                next = result[result.length - 1]._id as unknown as string;
                 nextPage = data.pageIndex + 1;
             }
             return { voters: result, next, prev, nextPage, prevPage };
-        } else
-        {
+        } else {
             return null; // No data found
         }
-    } else if (data.pageIndex >= 1 && data.prev)
-    {
+    } else if (data.pageIndex >= 1 && data.prev) {
         const resultCount = await UserInfo.countDocuments({ _id: { $lt: data.prev } });
         const pageCount = Math.ceil(resultCount / data.pageSize);
         const lastPage = pageCount > 0 ? pageCount : 1;
 
         result = await UserInfo.find({ _id: { $lt: data.prev } }).sort({ _id: -1 }).limit(data.pageSize).select('-pass -role');
 
-        if (result.length > 0 && data.pageIndex > 1)
-        {
+        if (result.length > 0 && data.pageIndex > 1) {
             next = data.prev;
-            prev = result[result.length - 1]._id;
+            prev = result[result.length - 1]._id as unknown as string;
             nextPage = data.pageIndex + 1;
             prevPage = data.pageIndex - 1;
             return { voters: result.reverse(), next, prev, nextPage, prevPage };
@@ -183,7 +157,7 @@ const getAllVoters = async (data: VoterPage): Promise<{ voters: VoterBody[], nex
         else if (data.pageIndex === 1) // Special case for first page
         {
             //next = result.length > 0 ? result[result.length - 1]._id : null;
-            next=data.prev;
+            next = data.prev;
             nextPage = data.pageIndex + 1;
             prevPage = null;
             return { voters: result.reverse(), next, prev, nextPage, prevPage };
@@ -193,21 +167,17 @@ const getAllVoters = async (data: VoterPage): Promise<{ voters: VoterBody[], nex
             return null;
         }
     }
-    else if (data.pageIndex > 1 && data.next)
-    {
+    else if (data.pageIndex > 1 && data.next) {
         result = await UserInfo.find({ _id: { $gt: data.next } }).sort({ _id: 1 }).limit(data.pageSize).select('-pass -role');
-        if (result.length > 0)
-        {
+        if (result.length > 0) {
             prev = data.next;
-            if (result.length === data.pageSize)
-            {
-                next = result[result.length - 1]._id;
+            if (result.length === data.pageSize) {
+                next = result[result.length - 1]._id as unknown as string;
                 nextPage = data.pageIndex + 1;
             }
             prevPage = data.pageIndex - 1;
             return { voters: result, next, prev, nextPage, prevPage };
-        } else
-        {
+        } else {
             return null; // No more next page
         }
     }
