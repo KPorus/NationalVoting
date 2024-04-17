@@ -25,11 +25,11 @@ interface VoterBody
     voteCandidate: ObjectId | null
     voterId: string,
 }
-interface VoterPage
+export interface VoterPage
 {
     pageIndex: number,
-    next?: ObjectId,
-    prev?: ObjectId,
+    next?: ObjectId | any,
+    prev?: ObjectId | any,
     pageSize: number
 }
 interface UploadResult

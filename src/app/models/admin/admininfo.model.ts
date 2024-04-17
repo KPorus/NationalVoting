@@ -1,7 +1,6 @@
 import { Schema, model, ObjectId } from 'mongoose';
 // Creating an interface
-export interface Info
-{
+export interface Info {
     _id: ObjectId,
     email: string,
     pass: string,

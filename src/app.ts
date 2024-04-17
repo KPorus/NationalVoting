@@ -21,8 +21,9 @@ const limiter = rateLimit({
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
 })
 
-app.use(limiter)
-app.set("trust proxy", numberOfProxies);
+// app.use(limiter)
+// app.set("trust proxy", numberOfProxies);
+
 // app.use(function (req, res, next)
 // {
 //     if (toobusy())
@@ -33,6 +34,7 @@ app.set("trust proxy", numberOfProxies);
 //         next();
 //     }
 // });
+
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1', router)
