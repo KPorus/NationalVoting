@@ -1,6 +1,6 @@
-import { AdminInfo } from "../../models/admin/admininfo.model";
+import { AdminInfo } from "../admin/admininfo.model";
 import { CandidateList } from "../../models/candidate.model";
-import { Info, UserInfo } from "../../models/users/userinfo.model"
+import { Info, UserInfo } from "./userinfo.model"
 import { Types } from 'mongoose';
 import { votingInfoList } from "../../models/votingInfo.model";
 interface Body

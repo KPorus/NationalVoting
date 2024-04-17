@@ -1,8 +1,8 @@
-import { AdminInfo } from '../app/models/admin/admininfo.model';
+import { AdminInfo } from '../app/modules/admin/admininfo.model';
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken"
 import { Types } from 'mongoose';
-import { UserInfo } from '../app/models/users/userinfo.model';
+import { UserInfo } from '../app/modules/users/userinfo.model';
 type jwtTest = jwt.JwtPayload | {
     _id: Types.ObjectId
 }

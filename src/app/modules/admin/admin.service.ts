@@ -1,42 +1,12 @@
 import { CandidateList, Candidate } from './../../models/candidate.model';
-import { AdminInfo, Info } from "../../models/admin/admininfo.model";
+import { AdminInfo, Info } from "./admininfo.model";
 import { ObjectId } from 'mongoose';
-import { UserInfo } from '../../models/users/userinfo.model';
+import { UserInfo } from '../users/userinfo.model';
+import { AdminBody, Body, UploadResult, VoterBody, VoterPage } from './admin.interface';
 const cloudinary = require("../../../utils/cloudinary");
 const xlsx = require("xlsx");
 const fs = require("fs");
-interface Body
-{
-    email: string,
-    pass: string
-}
 
-interface AdminBody
-{
-    _id: ObjectId,
-    email: string,
-    role: string
-}
-
-interface VoterBody
-{
-    _id: ObjectId,
-    email: string,
-    voteCandidate: ObjectId | null
-    voterId: string,
-}
-interface VoterPage
-{
-    pageIndex: number,
-    next?: ObjectId,
-    prev?: ObjectId,
-    pageSize: number
-}
-interface UploadResult
-{
-    numberOfCandidate: number;
-    numberOfUsers: number;
-}
 
 const login = async (data: Body): Promise<Info | null> =>
 {
