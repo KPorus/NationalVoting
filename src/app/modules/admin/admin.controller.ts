@@ -1,7 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { Candidate } from "./../../models/candidate.model";
 import jwt from "jsonwebtoken";
-import { Types } from 'mongoose';
 //import CustomError from "../../../utils/errors/customError"
 import { VoterPage, adminService } from "./admin.service";
 import multer from "multer";
@@ -70,8 +68,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     } else {
       throw new CustomError(404, "user not found")
     }
-  } catch (err) {
-    next(err)
+  } catch (err:any) {
+    throw new Error(err.message)
   }
 };
 
@@ -143,7 +141,7 @@ const updateCandidate = async (req: Request, res: Response) => {
   }
 };
 
-const candidateImgUpload = async (req: Request, res: Response) => {
+const candidateImgUpload = async (req: Request, res: Response, next:NextFunction) => {
   try {
     const input = req.file;
 
@@ -158,7 +156,8 @@ const candidateImgUpload = async (req: Request, res: Response) => {
         .status(200)
         .json({ status: "Success", message: result.message });
     } else {
-      return res.status(200).json({ status: "Fail", message: result.message });
+      const err = new CustomError(404, result.message)
+      next(err)
     }
   } catch (error) {
     res.status(500).json({ status: "Fail", message: error });
@@ -177,7 +176,7 @@ const displayAdminInfo = async (req: Request, res: Response) => {
     res.status(500).json({ status: "Fail", message: error });
   }
 };
-const getAllVoters = async (req: Request, res: Response) => {
+const getAllVoters = async (req: Request, res: Response, next:NextFunction) => {
   try {
     const data: VoterPage = {
       pageSize: Number(req.query.pageSize),
@@ -185,15 +184,15 @@ const getAllVoters = async (req: Request, res: Response) => {
       prev: req.query.prev === "null" ? null : req.query.prev as string,
       next: req.query.next === "null" ? null : req.query.prev as string
     };
-    console.log(data);
     const user = await adminService.getAllVoters(data);
     if (user) {
       res.status(200).json({ status: "Success", user });
     } else {
-      return res.status(200).json({ status: "Fail" });
+      const err = new CustomError(404,"Something wrong")
+      next(err)
     }
-  } catch (error) {
-    res.status(500).json({ status: "Fail", message: error });
+  } catch (err:any) {
+    throw new Error(err.message)
   }
 };
 export const adminController = {
