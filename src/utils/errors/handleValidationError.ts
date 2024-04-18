@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-interface IValidationError { message: string, kind: string, reason?: string, stack?: string }
 const handleValidationError = (
     error: mongoose.Error.ValidationError
 ) =>
