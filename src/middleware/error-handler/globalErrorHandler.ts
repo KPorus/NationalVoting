@@ -5,7 +5,7 @@ import { handleJsonSyntaxError } from "../../utils/errors/handleSyntexError";
 
 export const globalError: ErrorRequestHandler = (error, req, res, next) =>
 {
-    console.log("global error1",error);
+    //console.log("global error1",error);
     let statusCode = error.code || 500;
     let status = error.status || 'error'
     let message = error.message ||"Something went wrong"
@@ -16,7 +16,6 @@ export const globalError: ErrorRequestHandler = (error, req, res, next) =>
     if (error.name === "CastError")
     {
         const result = handleCastError(error);
-        console.log(result);
         message = result.message;
         status = result.statusCode >= 400 && result.statusCode < 500 ? 'fail' : 'error';
         statusCode = result.statusCode;
@@ -26,7 +25,6 @@ export const globalError: ErrorRequestHandler = (error, req, res, next) =>
     } else if (error.name === "ValidationError")
     {
         const result = handleValidationError(error);
-        console.log(result);
         message = result.message;
         status = result.statusCode >= 400 && result.statusCode < 500 ? 'fail' : 'error';
         statusCode = result.statusCode;
@@ -36,7 +34,6 @@ export const globalError: ErrorRequestHandler = (error, req, res, next) =>
     }
     else if (error.name === "SyntaxError"){
         const result = handleJsonSyntaxError(error);
-        console.log(result);
         message = result.message;
         status = result.statusCode >= 400 && result.statusCode < 500 ? 'fail' : 'error';
         statusCode = result.statusCode;
@@ -47,12 +44,20 @@ export const globalError: ErrorRequestHandler = (error, req, res, next) =>
         message = error.message;   
     }
 
+    if (process.env.NODE_ENV === "development")
+    {
+        res.status(statusCode).json({
+            code: statusCode,
+            status: status,
+            message: message,
+            stack: stack,
+            kind: kind,
+            reason: reason
+        })
+    }
     res.status(statusCode).json({
         code: statusCode,
         status: status,
-        message: message,
-        stack:stack,
-        kind:kind,
-        reason:reason
+        message: message
     })
 }

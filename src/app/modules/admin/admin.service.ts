@@ -1,6 +1,5 @@
 import { CandidateList, Candidate } from './../../models/candidate.model';
 import { AdminInfo, Info } from "./admininfo.model";
-import { ObjectId, Types } from 'mongoose';
 import { UserInfo } from '../users/userinfo.model';
 import { AdminBody, Body, UploadResult, VoterBody } from './admin.interface';
 const cloudinary = require("../../../utils/cloudinary");
@@ -168,7 +167,6 @@ const getAllVoters = async (data: VoterPage): Promise<{ voters: VoterBody[], nex
         }
     }
     else if (data.pageIndex > 1 && data.next) {
-        console.log("next id",data.next);
         result = await UserInfo.find({ _id: { $gt: data.next } }).sort({ _id: 1 }).limit(data.pageSize).select('-pass -role');
         if (result.length > 0) {
             prev = data.next;
