@@ -66,10 +66,11 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         next(err)
       }
     } else {
-      throw new CustomError(404, "user not found")
+      const err = new CustomError(404, "User not found")
+      next(err)
     }
   } catch (err:any) {
-    throw new Error(err.message)
+    next(err)
   }
 };
 
@@ -182,7 +183,7 @@ const getAllVoters = async (req: Request, res: Response, next:NextFunction) => {
       pageSize: Number(req.query.pageSize),
       pageIndex: Number(req.query.pageIndex),
       prev: req.query.prev === "null" ? null : req.query.prev as string,
-      next: req.query.next === "null" ? null : req.query.prev as string
+      next: req.query.next === "null" ? null : req.query.next as string
     };
     const user = await adminService.getAllVoters(data);
     if (user) {
@@ -192,7 +193,7 @@ const getAllVoters = async (req: Request, res: Response, next:NextFunction) => {
       next(err)
     }
   } catch (err:any) {
-    throw new Error(err.message)
+    next(err)
   }
 };
 export const adminController = {

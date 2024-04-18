@@ -1,11 +1,10 @@
-import { Schema, model, ObjectId } from 'mongoose';
-// Creating an interface
+import { Schema, model} from 'mongoose';
+
 export interface Info
 {
-    _id: ObjectId,
+    _id: any;
     email: string,
     pass: string,
-    // voteCandidate: Types.ObjectId | null
     role: string,
     voterId: string,
 }
@@ -18,12 +17,8 @@ const infoSchema = new Schema<Info>({
 
     pass: {
         type: String,
-        required: [true, "Body should not be empty!"]
+        required: [true, "Please provide a password!"]
     },
-    // voteCandidate: {
-    //     type: Types.ObjectId,
-    //     ref: 'Candidate'
-    // },
     role: { type: String },
     voterId: { type: String, required: [true, "Please provide voter id."], unique: true }
 }, { timestamps: true });

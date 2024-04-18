@@ -8,8 +8,8 @@ const xlsx = require("xlsx");
 const fs = require("fs");
 export interface VoterPage {
     pageIndex: number,
-    next: null | string,
-    prev: null | string,
+    next?: null | string,
+    prev?: null | string,
     pageSize: number
 }
 
@@ -168,6 +168,7 @@ const getAllVoters = async (data: VoterPage): Promise<{ voters: VoterBody[], nex
         }
     }
     else if (data.pageIndex > 1 && data.next) {
+        console.log("next id",data.next);
         result = await UserInfo.find({ _id: { $gt: data.next } }).sort({ _id: 1 }).limit(data.pageSize).select('-pass -role');
         if (result.length > 0) {
             prev = data.next;

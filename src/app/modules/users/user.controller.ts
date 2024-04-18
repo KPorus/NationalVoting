@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken"
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { userService } from "./user.service";
+import { CustomError } from "../../../utils/errors/customError";
 
 const signToken = (id: string) =>
 {
@@ -42,7 +43,7 @@ const login = async (req: Request, res: Response) =>
     }
 }
 
-const register = async (req: Request, res: Response) =>
+const register = async (req: Request, res: Response, next:NextFunction) =>
 {
     try
     {
@@ -53,11 +54,12 @@ const register = async (req: Request, res: Response) =>
         }
         else
         {
-            return res.status(400).json({ status: "Fail", message: "User not registered. Please check your network connection or Check your email and your voter Id. Two account same email is not acceptable. Different email and same voter id not acceptable." })
+            const err = new CustomError(400, "User not registered. Please check your network connection or Check your email and your voter Id. Two account same email is not acceptable. Different email and same voter id not acceptable.")
+            next(err);
         }
     } catch (err)
     {
-        res.status(500).json({ status: "Fail", message: `Internal server error. ${err}` })
+        next(err)
     }
 }
 

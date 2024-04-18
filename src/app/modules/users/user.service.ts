@@ -12,21 +12,21 @@ interface Body
 
 const register = async (data: Body): Promise<Info | null> =>
 {
-    // const check = await UserInfo.findOne({
-    //     $or: [
-    //         { email: data.email },
-    //         { voterId: data.voterId }
-    //     ]
-    // });
+    const check = await UserInfo.findOne({
+        $or: [
+            { email: data.email },
+            { voterId: data.voterId }
+        ]
+    });
 
-    // // const checkAdmin = await AdminInfo.findOne({
-    // //     email: data.email
-    // // });
-    // if (check)
-    // {
-    //     let user = null;
-    //     return user;
-    // }
+    // const checkAdmin = await AdminInfo.findOne({
+    //     email: data.email
+    // });
+    if (check)
+    {
+        let user = null;
+        return user;
+    }
     const value = { ...data, role: "user" };
     const user = await UserInfo.create(value);
     return user
