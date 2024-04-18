@@ -16,7 +16,7 @@ const signToken = (id: string) =>
     );
 };
 
-const login = async (req: Request, res: Response) =>
+const login = async (req: Request, res: Response, next: NextFunction) =>
 {
     try
     {
@@ -30,16 +30,18 @@ const login = async (req: Request, res: Response) =>
             }
             else
             {
-                return res.status(404).json({ status: "Fail", message: "Password not match" })
+                const err = new CustomError(404, "Password not match")
+                next(err);
             }
         }
         else
         {
-            return res.status(404).json({ status: "Fail", message: "user not found" })
+            const err = new CustomError(404, "user not found")
+            next(err);
         }
     } catch (err)
     {
-        res.status(500).json({ status: "Fail", message: `Internal server error. ${err}` })
+        next(err)
     }
 }
 
@@ -63,7 +65,7 @@ const register = async (req: Request, res: Response, next:NextFunction) =>
     }
 }
 
-const vote = async (req: Request, res: Response) =>
+const vote = async (req: Request, res: Response, next: NextFunction) =>
 {
     try
     {
@@ -74,14 +76,15 @@ const vote = async (req: Request, res: Response) =>
         }
         else
         {
-            return res.status(400).json({ status: "Fail", message: "Vote unsuccessfull." })
+            const err = new CustomError(400, "Vote unsuccessfull.")
+            next(err);
         }
     } catch (err)
     {
-        res.status(500).json({ status: "Fail", message: `Internal server error. ${err}` })
+        next(err)
     }
 }
-const allCandidate = async (req: Request, res: Response) =>
+const allCandidate = async (req: Request, res: Response, next: NextFunction) =>
 {
     try
     {
@@ -92,11 +95,12 @@ const allCandidate = async (req: Request, res: Response) =>
         }
         else
         {
-            return res.status(400).json({ status: "Fail", message: "Candidate not found" })
+            const err = new CustomError(404, "Candidate not found")
+            next(err);
         }
     } catch (err)
     {
-        res.status(500).json({ status: "Fail", message: `Internal server error. ${err}` })
+        next(err)
     }
 }
 export const userController = {

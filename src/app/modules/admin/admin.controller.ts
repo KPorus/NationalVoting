@@ -74,17 +74,20 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const uploadCandidate = async (req: Request, res: Response) => {
+const uploadCandidate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const input = req.file;
 
     if (!input) {
-      return res.status(400).send("No file uploaded.");
+      const err = new CustomError(404, "No file uploaded.")
+      next(err);
     }
 
     const candidate = await adminService.uploadCandidate(input);
 
     if (!candidate) {
+      // const err = new CustomError(404, "somthing went wron")
+      // next(err);
       return res
         .status(500)
         .json({ status: "Fail", message: "Internal server error." });
@@ -110,22 +113,21 @@ const uploadCandidate = async (req: Request, res: Response) => {
         });
     }
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ status: "Fail", message: "Internal server error." });
+    next(err)
   }
 };
 
-const getAllCandidate = async (req: Request, res: Response) => {
+const getAllCandidate = async (req: Request, res: Response,next:NextFunction) => {
   try {
     const Candidate = await adminService.getCandidate();
     if (Candidate) {
       return res.status(200).json({ status: "Success", Candidate });
     }
-  } catch (error) {
-    res.status(500).json({ status: "Fail", message: "Internal server error." });
+  } catch (err) {
+    next(err)
   }
 };
-const updateCandidate = async (req: Request, res: Response) => {
+const updateCandidate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const Candidate = await adminService.updateCandidate(req.body);
     if (Candidate.success) {
@@ -133,12 +135,11 @@ const updateCandidate = async (req: Request, res: Response) => {
         .status(200)
         .json({ status: "Success", message: Candidate.message });
     } else {
-      return res
-        .status(200)
-        .json({ status: "Fail", message: Candidate.message });
+      const err = new CustomError(404, Candidate.message)
+      next(err);
     }
-  } catch (error) {
-    res.status(500).json({ status: "Fail", message: "Internal server error." });
+  } catch (err) {
+    next(err)
   }
 };
 
@@ -160,21 +161,22 @@ const candidateImgUpload = async (req: Request, res: Response, next:NextFunction
       const err = new CustomError(404, result.message)
       next(err)
     }
-  } catch (error) {
-    res.status(500).json({ status: "Fail", message: error });
+  } catch (err) {
+    next(err)
   }
 };
 
-const displayAdminInfo = async (req: Request, res: Response) => {
+const displayAdminInfo = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const admin = await adminService.displayAdminInfo(req.body);
     if (admin) {
       res.status(200).json({ status: "Success", message: admin });
     } else {
-      return res.status(200).json({ status: "Fail" });
+      const err = new Error();
+      next(err);
     }
-  } catch (error) {
-    res.status(500).json({ status: "Fail", message: error });
+  } catch (err) {
+    next(err)
   }
 };
 const getAllVoters = async (req: Request, res: Response, next:NextFunction) => {
