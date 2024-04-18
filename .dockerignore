@@ -1,1 +1,8 @@
+.env
+node_modules
+dist
+package-lock.json
+.vercel
+Error.log
 Dockerfile
+.git
