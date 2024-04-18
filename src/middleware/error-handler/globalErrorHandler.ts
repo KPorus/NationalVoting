@@ -1,10 +1,11 @@
 import { ErrorRequestHandler } from "express";
 import handleCastError from "../../utils/errors/handleCastError";
 import handleValidationError from "../../utils/errors/handleValidationError";
+import { handleJsonSyntaxError } from "../../utils/errors/handleSyntexError";
 
 export const globalError: ErrorRequestHandler = (error, req, res, next) =>
 {
-    console.log("global error1",error.name);
+    console.log("global error1",error);
     let statusCode = error.code || 500;
     let status = error.status || 'error'
     let message = error.message ||"Something went wrong"
@@ -33,7 +34,15 @@ export const globalError: ErrorRequestHandler = (error, req, res, next) =>
         kind = result.kindValue
         reason = result.reasonValue
     }
-     else if (error instanceof Error)
+    else if (error.name === "SyntaxError"){
+        const result = handleJsonSyntaxError(error);
+        console.log(result);
+        message = result.message;
+        status = result.statusCode >= 400 && result.statusCode < 500 ? 'fail' : 'error';
+        statusCode = result.statusCode;
+        stack = result.invalidJson
+    }
+    else if (error instanceof Error)
     {
         message = error.message;   
     }

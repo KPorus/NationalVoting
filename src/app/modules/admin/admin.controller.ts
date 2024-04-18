@@ -1,17 +1,19 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from "jsonwebtoken";
-//import CustomError from "../../../utils/errors/customError"
 import { VoterPage, adminService } from "./admin.service";
 import multer from "multer";
 import { CustomError } from '../../../utils/errors/customError';
-
+import { CatchAsync } from '../../../Shared/CatchAsync';
 const path = require("path");
+
 // Configure multer storage for XLSX files
 const multerXlsxConfig = multer.diskStorage({
-  destination: (req: Request, file: any, callback: any) => {
+  destination: (req: Request, file: any, callback: any) =>
+  {
     callback(null, "file"); // Set the destination folder for uploaded files
   },
-  filename: (req: Request, file: any, callback: any) => {
+  filename: (req: Request, file: any, callback: any) =>
+  {
     callback(
       null,
       file.fieldname + "-" + Date.now() + path.extname(file.originalname) // Set the filename for the uploaded file
@@ -20,7 +22,8 @@ const multerXlsxConfig = multer.diskStorage({
 });
 // Configure multer storage for Img files
 const multerImgConfig = multer.diskStorage({
-  filename: function (req: Request, file: any, cb: any) {
+  filename: function (req: Request, file: any, cb: any)
+  {
     cb(null, file.originalname);
   },
 });
@@ -35,7 +38,8 @@ export const uploadImg = multer({
   storage: multerImgConfig,
 });
 
-const signToken = (id: string, email: String) => {
+const signToken = (id: string, email: String) =>
+{
   return jwt.sign(
     {
       id,
@@ -48,11 +52,14 @@ const signToken = (id: string, email: String) => {
   );
 };
 
-const login = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+const login = CatchAsync(
+  async (req: Request, res: Response, next: NextFunction) =>
+  {
     const user = await adminService.login(req.body);
-    if (user) {
-      if (user.pass == req.body.pass) {
+    if (user)
+    {
+      if (user.pass == req.body.pass)
+      {
         const token = signToken(user._id.toString(), user.email.toString());
         return res
           .status(200)
@@ -61,31 +68,33 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
             message: "User login succesfull",
             token: token,
           });
-      } else {
+      } else
+      {
         const err = new CustomError(404, "Password not match")
         next(err)
       }
-    } else {
+    } else
+    {
       const err = new CustomError(404, "User not found")
       next(err)
     }
-  } catch (err:any) {
-    next(err)
   }
-};
+);
 
-const uploadCandidate = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+const uploadCandidate = CatchAsync(async (req: Request, res: Response, next: NextFunction) =>
+{
     const input = req.file;
 
-    if (!input) {
+    if (!input)
+    {
       const err = new CustomError(404, "No file uploaded.")
       next(err);
     }
 
     const candidate = await adminService.uploadCandidate(input);
 
-    if (!candidate) {
+    if (!candidate)
+    {
       // const err = new CustomError(404, "somthing went wron")
       // next(err);
       return res
@@ -93,18 +102,21 @@ const uploadCandidate = async (req: Request, res: Response, next: NextFunction) 
         .json({ status: "Fail", message: "Internal server error." });
     }
 
-    if (candidate.numberOfCandidate === candidate.numberOfUsers) {
+    if (candidate.numberOfCandidate === candidate.numberOfUsers)
+    {
       return res
         .status(200)
         .json({
           status: "Success",
           message: "All candidates have been uploaded.",
         });
-    } else if (candidate.numberOfCandidate === 0) {
+    } else if (candidate.numberOfCandidate === 0)
+    {
       return res
         .status(200)
         .json({ status: "Success", message: "No new candidates uploaded." });
-    } else if (candidate.numberOfCandidate < candidate.numberOfUsers) {
+    } else if (candidate.numberOfCandidate < candidate.numberOfUsers)
+    {
       return res
         .status(200)
         .json({
@@ -112,75 +124,70 @@ const uploadCandidate = async (req: Request, res: Response, next: NextFunction) 
           message: "Some candidates have been uploaded.",
         });
     }
-  } catch (err) {
-    next(err)
-  }
-};
+});
 
-const getAllCandidate = async (req: Request, res: Response,next:NextFunction) => {
-  try {
+const getAllCandidate = CatchAsync(async (req: Request, res: Response) =>
+{
     const Candidate = await adminService.getCandidate();
-    if (Candidate) {
+    if (Candidate)
+    {
       return res.status(200).json({ status: "Success", Candidate });
     }
-  } catch (err) {
-    next(err)
-  }
-};
-const updateCandidate = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+});
+
+const updateCandidate = CatchAsync(async (req: Request, res: Response, next: NextFunction) =>
+{
     const Candidate = await adminService.updateCandidate(req.body);
-    if (Candidate.success) {
+    if (Candidate.success)
+    {
       return res
         .status(200)
         .json({ status: "Success", message: Candidate.message });
-    } else {
+    } else
+    {
       const err = new CustomError(404, Candidate.message)
       next(err);
     }
-  } catch (err) {
-    next(err)
-  }
-};
+});
 
-const candidateImgUpload = async (req: Request, res: Response, next:NextFunction) => {
-  try {
+const candidateImgUpload = CatchAsync(async (req: Request, res: Response, next: NextFunction) =>
+{
     const input = req.file;
 
-    if (!input) {
+    if (!input)
+    {
       return res.status(400).send("No file uploaded.");
     }
     const data = JSON.parse(req.body.data);
 
     const result = await adminService.candidateImgUpload(data, input);
-    if (result.success) {
+    if (result.success)
+    {
       return res
         .status(200)
         .json({ status: "Success", message: result.message });
-    } else {
+    } else
+    {
       const err = new CustomError(404, result.message)
       next(err)
     }
-  } catch (err) {
-    next(err)
-  }
-};
+});
 
-const displayAdminInfo = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+const displayAdminInfo = CatchAsync(async (req: Request, res: Response, next: NextFunction) =>
+{
     const admin = await adminService.displayAdminInfo(req.body);
-    if (admin) {
+    if (admin)
+    {
       res.status(200).json({ status: "Success", message: admin });
-    } else {
+    } else
+    {
       const err = new Error();
       next(err);
     }
-  } catch (err) {
-    next(err)
-  }
-};
-const getAllVoters = async (req: Request, res: Response, next:NextFunction) => {
-  try {
+});
+
+const getAllVoters = CatchAsync(async (req: Request, res: Response, next: NextFunction) =>
+{
     const data: VoterPage = {
       pageSize: Number(req.query.pageSize),
       pageIndex: Number(req.query.pageIndex),
@@ -188,16 +195,16 @@ const getAllVoters = async (req: Request, res: Response, next:NextFunction) => {
       next: req.query.next === "null" ? null : req.query.next as string
     };
     const user = await adminService.getAllVoters(data);
-    if (user) {
+    if (user)
+    {
       res.status(200).json({ status: "Success", user });
-    } else {
-      const err = new CustomError(404,"Something wrong")
+    } else
+    {
+      const err = new CustomError(404, "Something wrong")
       next(err)
     }
-  } catch (err:any) {
-    next(err)
-  }
-};
+});
+
 export const adminController = {
   login,
   uploadCandidate,
