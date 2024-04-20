@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1', router)
 app.use('/test', (req,res,next)=>{
-    throw new Error();
+    throw new Error("Test");
 })
 // Handler for route-not-found
 app.all('*',(req, res,next) =>
