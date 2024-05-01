@@ -1,7 +1,11 @@
 import { CandidateList, Candidate } from './../../models/candidate.model';
 import { AdminInfo, Info } from "./admininfo.model";
 import { UserInfo } from '../users/userinfo.model';
-import { AdminBody, Body, UploadResult, VoterBody } from './admin.interface';
+import { AdminBody, Body,  UploadResult, VoterBody } from './admin.interface';
+import { paginationHelpers } from '../../../Shared/paginationHelpers';
+import { CustomError } from '../../../utils/errors/customError';
+import { IPaginationOptons } from '../../interface/pagination';
+import { IGenericMetaResponse } from '../../interface/response';
 const cloudinary = require("../../../utils/cloudinary");
 const xlsx = require("xlsx");
 const fs = require("fs");
@@ -121,66 +125,80 @@ const displayAdminInfo = async (body: { _id: string }): Promise<AdminBody | null
     return null
 }
 
-const getAllVoters = async (data: VoterPage): Promise<{ voters: VoterBody[], nextPage: number | null, prevPage: number | null, next: string | null, prev: string | null } | null> => {
-    let result: VoterBody[];
-    let next: string | null = null;
-    let prev: string | null = null;
-    let nextPage: number | null = null;
-    let prevPage: number | null = null;
+// const getAllVoters = async (data: VoterPage): Promise<{ voters: VoterBody[], nextPage: number | null, prevPage: number | null, next: string | null, prev: string | null } | null> => {
+//     let result: VoterBody[];
+//     let next: string | null = null;
+//     let prev: string | null = null;
+//     let nextPage: number | null = null;
+//     let prevPage: number | null = null;
 
-    if (data.pageIndex === 1 && !data.prev && !data.next) {
-        result = await UserInfo.find({}).sort({ _id: 1 }).limit(data.pageSize).select('-pass -role');
-        if (result.length > 0) {
-            if (result.length === data.pageSize) {
-                next = result[result.length - 1]._id as unknown as string;
-                nextPage = data.pageIndex + 1;
-            }
-            return { voters: result, next, prev, nextPage, prevPage };
-        } else {
-            return null; // No data found
-        }
-    } else if (data.pageIndex >= 1 && data.prev) {
-        const resultCount = await UserInfo.countDocuments({ _id: { $lt: data.prev } });
-        const pageCount = Math.ceil(resultCount / data.pageSize);
-        const lastPage = pageCount > 0 ? pageCount : 1;
+//     if (data.pageIndex === 1 && !data.prev && !data.next) {
+//         result = await UserInfo.find({}).sort({ _id: 1 }).limit(data.pageSize).select('-pass -role');
+//         if (result.length > 0) {
+//             if (result.length === data.pageSize) {
+//                 next = result[result.length - 1]._id as unknown as string;
+//                 nextPage = data.pageIndex + 1;
+//             }
+//             return { voters: result, next, prev, nextPage, prevPage };
+//         } else {
+//             return null; // No data found
+//         }
+//     } else if (data.pageIndex >= 1 && data.prev) {
+//         const resultCount = await UserInfo.countDocuments({ _id: { $lt: data.prev } });
+//         const pageCount = Math.ceil(resultCount / data.pageSize);
+//         const lastPage = pageCount > 0 ? pageCount : 1;
 
-        result = await UserInfo.find({ _id: { $lt: data.prev } }).sort({ _id: -1 }).limit(data.pageSize).select('-pass -role');
+//         result = await UserInfo.find({ _id: { $lt: data.prev } }).sort({ _id: -1 }).limit(data.pageSize).select('-pass -role');
 
-        if (result.length > 0 && data.pageIndex > 1) {
-            next = data.prev;
-            prev = result[result.length - 1]._id as unknown as string;
-            nextPage = data.pageIndex + 1;
-            prevPage = data.pageIndex - 1;
-            return { voters: result.reverse(), next, prev, nextPage, prevPage };
-        }
-        else if (data.pageIndex === 1) // Special case for first page
-        {
-            //next = result.length > 0 ? result[result.length - 1]._id : null;
-            next = data.prev;
-            nextPage = data.pageIndex + 1;
-            prevPage = null;
-            return { voters: result.reverse(), next, prev, nextPage, prevPage };
-        }
-        else if (data.pageIndex > lastPage) // If pageIndex exceeds last page, return null
-        {
-            return null;
-        }
+//         if (result.length > 0 && data.pageIndex > 1) {
+//             next = data.prev;
+//             prev = result[result.length - 1]._id as unknown as string;
+//             nextPage = data.pageIndex + 1;
+//             prevPage = data.pageIndex - 1;
+//             return { voters: result.reverse(), next, prev, nextPage, prevPage };
+//         }
+//         else if (data.pageIndex === 1) // Special case for first page
+//         {
+//             //next = result.length > 0 ? result[result.length - 1]._id : null;
+//             next = data.prev;
+//             nextPage = data.pageIndex + 1;
+//             prevPage = null;
+//             return { voters: result.reverse(), next, prev, nextPage, prevPage };
+//         }
+//         else if (data.pageIndex > lastPage) // If pageIndex exceeds last page, return null
+//         {
+//             return null;
+//         }
+//     }
+//     else if (data.pageIndex > 1 && data.next) {
+//         result = await UserInfo.find({ _id: { $gt: data.next } }).sort({ _id: 1 }).limit(data.pageSize).select('-pass -role');
+//         if (result.length > 0) {
+//             prev = data.next;
+//             if (result.length === data.pageSize) {
+//                 next = result[result.length - 1]._id as unknown as string;
+//                 nextPage = data.pageIndex + 1;
+//             }
+//             prevPage = data.pageIndex - 1;
+//             return { voters: result, next, prev, nextPage, prevPage };
+//         } else {
+//             return null; // No more next page
+//         }
+//     }
+//     return null; // Invalid parameters
+// }
+const getAllVoters = async (IPaginationOptons: IPaginationOptons): Promise<IGenericMetaResponse<Info[]>> => {
+    const { page, limit, skip, sortBy, sortOrder } =
+        paginationHelpers.calculatePagination(IPaginationOptons);
+    const result = await UserInfo.find({}).sort().skip(skip).limit(limit);
+    if (result.length < 1) {
+        throw new CustomError(404, "Voters not found!");
     }
-    else if (data.pageIndex > 1 && data.next) {
-        result = await UserInfo.find({ _id: { $gt: data.next } }).sort({ _id: 1 }).limit(data.pageSize).select('-pass -role');
-        if (result.length > 0) {
-            prev = data.next;
-            if (result.length === data.pageSize) {
-                next = result[result.length - 1]._id as unknown as string;
-                nextPage = data.pageIndex + 1;
-            }
-            prevPage = data.pageIndex - 1;
-            return { voters: result, next, prev, nextPage, prevPage };
-        } else {
-            return null; // No more next page
-        }
-    }
-    return null; // Invalid parameters
+    const total = await UserInfo.countDocuments();
+    return {
+        meta: { limit, page, total },
+        data: result
+    };
+
 }
 
 export const adminService = {

@@ -1,4 +1,4 @@
-import { ObjectId, Schema, Types } from "mongoose";
+import { ObjectId } from "mongoose";
 
 export interface Body {
     email: string,
@@ -6,13 +6,11 @@ export interface Body {
 }
 
 export interface AdminBody {
-    _id: ObjectId,
     email: string,
     role: string
 }
 
 export interface VoterBody {
-    _id: ObjectId,
     email: string,
     voteCandidate: ObjectId | null
     voterId: string,
